@@ -21,12 +21,18 @@ export default function Footer() {
                 <div className="ml-10">
                     <h3 className="font-semibold mb-2">Quick Links</h3>
                     <ul className="list-disc list-inside space-y-1">
-                        <li> <QuickLinks Name="Home" /></li>
-                        <Link to='/about'>
-                                  <li><QuickLinks Name="About" /></li> </Link>
-                        <li><QuickLinks Name="Products" /></li>
-                        <Link to='/faq'>
-                                  <li><QuickLinks Name="FAQ" /></li> </Link>
+                        <li><QuickLinks name="Home" to="./" /> </li>
+<li><QuickLinks name="About Us" to="/aboutUs" /></li>
+<li><QuickLinks name="Products" to="/#" /></li>
+
+<li><QuickLinks name="FAQ" to="/faq" /></li>
+
+                        
+
+                        
+
+                        
+
                     </ul>
                 </div>
 
@@ -34,10 +40,12 @@ export default function Footer() {
                 <div>
                     <h3 className="font-semibold mb-2">Legal Links</h3>
                     <ul className="list-disc list-inside space-y-1">
-                        <Link to='/privacypolicy'>
-                                  <li><QuickLinks Name="Privacy Policy" /></li> </Link>
-                        <Link to='/termsofservice'>
-                                  <li><QuickLinks Name="Terms of Service" /></li> </Link>
+                        <li> <QuickLinks name="Privacy Policy" to="/privacypolicy" /></li>
+                        <li><QuickLinks name="Terms of Service" to="/termsofservice" /> </li>
+                        
+
+                        
+
                     </ul>
                 </div>
 
@@ -45,12 +53,14 @@ export default function Footer() {
                 <div>
                     <h3 className="font-semibold mb-2">Support & Feedback</h3>
                     <ul className="list-disc list-inside space-y-1">
-                        <li><QuickLinks Name="example@gmail.com" /></li>
-                        <li><QuickLinks Name="Phone:" /> 91617356923</li>
-                        <Link to='/feedback'>
-                                  <li><QuickLinks Name="Feedback" /></li> </Link>
-                        <Link to='/support'>
-                                  <li><QuickLinks Name="Support" /></li> </Link>
+                        <li><QuickLinks name="example@gmail.com" /></li>
+                        <li><QuickLinks name="Phone:" /> 91617356923</li>
+                        <li><QuickLinks name="Feedback" to="/feedback" /> </li>
+                        <li> <QuickLinks name="Support" to="/support" /></li>
+                        
+
+                       
+
                     </ul>
                 </div>
             </div>

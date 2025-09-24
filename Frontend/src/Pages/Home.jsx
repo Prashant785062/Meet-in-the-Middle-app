@@ -1,6 +1,5 @@
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaArrowRight } from "react-icons/fa";
-import Button from '../Components/Button'
 /* import Testimonials from "./Testimonials";
  */import Card from '../Components/Card'
 import p1 from '../assets/p1.jpg'
@@ -15,11 +14,76 @@ import p9 from '../assets/p9.jpg'
 import p10 from '../assets/p10.jpg'
 import p11 from '../assets/p11.jpg'
 import p12 from '../assets/p12.jpg'
+import { useSocket } from "../Providers/Socket";
+import { useState, useEffect } from "react";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 
 export default function Home() {
+  const navigate = useNavigate();
+  const socket = useSocket(); // ✅ returns socket directly
+
+  const [email, setEmail] = useState("");
+  const [roomId, setRoomId] = useState("");
+
+  // ✅ listen for "joined-room"
+  const handleRoomJoined = ({ roomId }) => {
+    console.log("✅ Joined room:", roomId);
+    navigate("/meeting");
+  };
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("joined-room", handleRoomJoined);
+
+    return () => {
+      socket.off("joined-room", handleRoomJoined);
+    };
+  }, [socket]);
+
+  // ✅ emit join-room event
+  const handleJoinRoom = () => {
+    if (!email || !roomId) {
+      alert("Please enter Email and Room Id");
+      return;
+    }
+    console.log("🔗 Joining room:", roomId, "with email:", email);
+    socket.emit("join-room", { email, roomId });
+  };
+
   return (
     <>
-    
+    <div className="flex flex-col gap-4 w-80 mx-auto mt-10">
+      <TextField
+        required
+        label="E-mail"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+      />
+      <TextField
+        required
+        label="Room Id"
+        value={roomId}
+        onChange={(e) => setRoomId(e.target.value)}
+      />
+
+
+      <Button
+        fullWidth
+        variant="contained"
+        color="primary"
+        onClick={handleJoinRoom}
+      >
+        Join Room
+      </Button>
+    </div>
+
+
+
+
+
+
     <div className="min-h-screen bg-teal-50 p-6">
       <h3 className="font-bold text-2xl text-center mb-8">See what others think... 😊</h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">

@@ -13,28 +13,36 @@ import Feedback from './Pages/Feedback';
 import Support from './Pages/Support';
 import PrivacyPolicy from './Pages/PrivacyPolicy';
 import TermsOfService from './Pages/TermsOfService';
+import Meeting from "./Pages/Meeting"
+import { SocketProvider } from './Providers/Socket';
 
 
 function App() {
+  
   return (
     <Router>
-      <Routes>
-        <Route element={<Layout />}>
-        <Route path="/" element={<Home />} />
-        <Route path="/testimonials" element={<Testimonials />} />
-        <Route path="/signin" element={<SignIn />} />
-        <Route path="/signup" element={<SignUp />} />
-        <Route path="/otp" element={<OTPPage />} />
-        <Route path="/subscription" element={<Subscription />} />
-        <Route path="/aboutUs" element={<About />} />
-        <Route path="/contact" element={<Contact />} />
-        <Route path="/faq" element={<FAQ />} />
-        <Route path="/feedback" element={<Feedback />} />
-        <Route path="/support" element={<Support />} />
-        <Route path="/privacypolicy" element={<PrivacyPolicy />} />
-        <Route path="/termsofservice" element={<TermsOfService />} />
-      </Route>
-      </Routes>
+      <SocketProvider>
+
+        <Routes>
+          <Route element={<Layout />}>
+            <Route path='/meeting' element={<Meeting />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/testimonials" element={<Testimonials />} />
+            <Route path="/signin" element={<SignIn />} />
+            <Route path="/signup" element={<SignUp />} />
+            <Route path="/otp" element={<OTPPage />} />
+            <Route path="/subscription" element={<Subscription />} />
+            <Route path="/aboutUs" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/faq" element={<FAQ />} />
+            <Route path="/feedback" element={<Feedback />} />
+            <Route path="/support" element={<Support />} />
+            <Route path="/privacypolicy" element={<PrivacyPolicy />} />
+            <Route path="/termsofservice" element={<TermsOfService />} />
+          </Route>
+        </Routes>
+        
+      </SocketProvider>
     </Router>
   );
 }

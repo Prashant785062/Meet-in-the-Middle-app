@@ -1,42 +1,41 @@
 // backend/server.js
 import express from "express";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-import cors from "cors";
-import authRoutes from "./routes/authRoutes.js";
-
-
-dotenv.config();
+import { createServer } from "http";
+import { Server } from "socket.io";
 
 const app = express();
-app.use(express.urlencoded({ extended:  false}))
-app.use(express.json());
-app.use(cors());
 
-app.use("/api/auth", authRoutes);
+// 🔑 wrap express with HTTP server
+const httpServer = createServer(app);
 
-
-app.get("/signin", (req, res) => {
-  res.send("API is running...");
+// 🔑 attach socket.io to that HTTP server
+const io = new Server(httpServer, {
+  cors: {
+    origin: "http://localhost:5173", // React frontend
+    methods: ["GET", "POST"]
+  }
 });
 
-app.get("/signin", (req, res) => {
-  res.send("API is running...");
+// Socket.IO events
+io.on("connection", (socket) => {
+  console.log("✅ Client connected:", socket.id);
+
+  socket.on("message", (msg) => {
+    console.log("📩 Message:", msg);
+    socket.emit("reply", `Echo: ${msg}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("❌ Client disconnected:", socket.id);
+  });
 });
 
-app.get("/signin", (req, res) => {
-  res.send("API is running...");
+// normal REST route still works
+app.get("/", (req, res) => {
+  res.send("Hello from Express + Socket.IO 🚀");
 });
 
-
-// Connect MongoDB
-mongoose
-  .connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("DB connection failed:", err));
-
-const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// start server
+httpServer.listen(5000, () => {
+  console.log("🚀 Server + Socket.IO running at http://localhost:5000");
+});

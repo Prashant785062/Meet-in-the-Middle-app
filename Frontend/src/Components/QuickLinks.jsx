@@ -1,7 +1,9 @@
-export default function QuickLinks({Name}) {
-    return (
-        
-            <a href="#" className="self-start no-underline hover:underline"> {Name} </a>
-        
-    )
+import { Link } from "react-router-dom";
+
+export default function QuickLinks({ name, to }) {
+  return (
+    <Link to={to} className="self-start no-underline hover:underline">
+      {name}
+    </Link>
+  );
 }
