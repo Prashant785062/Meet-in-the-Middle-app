@@ -1,39 +1,81 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import QuickLinks from "../Components/QuickLinks";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
+import Alert from "@mui/material/Alert";
+import { registerUser } from "../api/auth";
 
 export default function SignupPage() {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [accepted, setAccepted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e) => {
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!accepted) return;
+    setError("");
+
+    if (!username || !password || !phone || !accepted) {
+      setError("Please fill all fields and accept terms.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await registerUser({ username, password, phone });
+      setLoading(false);
+      navigate("/otp", { state: { phone } });
+    } catch (err) {
+      setLoading(false);
+      setError(err.response?.data?.message || "Registration failed. Try again.");
+    }
   };
 
+  const isSubmitDisabled =
+    !username || !password || !phone || !accepted || loading;
+
   return (
-    <div className="flex justify-center items-center h-screen bg-gray-50">
+    <div className="flex justify-center items-center h-screen bg-gray-50 px-4">
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col w-[400px] p-8 border rounded-xl shadow-md bg-white gap-4"
+        className="flex flex-col w-full sm:w-[400px] md:w-[420px] lg:w-[450px] p-6 sm:p-8 border rounded-xl shadow-md bg-white gap-4"
       >
-        <h5 className="text-xl font-semibold text-center mb-6">
+        <h5 className="text-lg sm:text-xl md:text-2xl font-semibold text-center mb-4 sm:mb-6">
           Create Your Account
         </h5>
 
-        <TextField required id="outlined-username" label="Username" />
+        {error && <Alert severity="error">{error}</Alert>}
+
         <TextField
-          required
-          id="outlined-password-input"
-          label="Password"
-          type="password"
-          autoComplete="current-password"
+          label="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          fullWidth
         />
 
-        {/* Terms & Conditions Checkbox */}
+        <TextField
+          label="Password"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          fullWidth
+        />
+
+        <TextField
+          label="Phone Number"
+          type="tel"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          fullWidth
+        />
+
         <FormControlLabel
           control={
             <Checkbox
@@ -45,33 +87,33 @@ export default function SignupPage() {
             <span>
               I agree to the{" "}
               <Link
-                to="/terms"
+                to="/terms&Conditions"
                 className="text-blue-600 hover:underline"
-                target="_blank"
               >
-                <QuickLinks Name="Terms & Conditions" />
+                Terms & Conditions
               </Link>
             </span>
           }
         />
 
-        <Link to="/otp">
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            disabled={!accepted}
-          >
-            Submit
-          </Button>
-        </Link>
-        {/* Divider line */}
-        <hr className="my-6 border-gray-300" />
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          disabled={isSubmitDisabled}
+          className={`h-10 normal-case text-sm sm:text-base ${
+            isSubmitDisabled ? "bg-gray-400 hover:bg-gray-400" : "bg-blue-600"
+          }`}
+        >
+          {loading ? "Submitting..." : "Submit"}
+        </Button>
+
+        <hr className="my-4 sm:my-6 border-gray-300" />
 
         <p className="text-sm text-center">
           Already have an account?{" "}
-          <Link to="/signin" className="text-blue-600 hover:underline">
-            <QuickLinks Name="Sign in" />
+          <Link to="/" className="text-blue-600 hover:underline">
+            Sign in
           </Link>
         </p>
 

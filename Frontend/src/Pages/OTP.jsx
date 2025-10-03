@@ -1,74 +1,82 @@
 import { useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { verifyOTP, loginUser } from "../api/auth";
 
-export default function OTPPage() {
-  const [phone, setPhone] = useState("");
+export default function OTP() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const phone = location.state?.phone || "";
+
   const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
-  const [verified, setVerified] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleVerify = () => {
-    if (!phone || !otp) return;
+  const handleVerify = async () => {
+    setError("");
+    if (!otp) {
+      setError("OTP is required");
+      return;
+    }
     setLoading(true);
-
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const res = await verifyOTP({ phone, otp });
+      const data = res?.data || res;
+      if (data?.token) localStorage.setItem("token", data.token);
+      if (data?.user) {
+        localStorage.setItem("user", JSON.stringify(data.user));
+        const id = data.user._id || data.user.id || data.user.userId;
+        if (id) localStorage.setItem("userId", id);
+      } else if (data?.userId || data?._id || data?.id) {
+        localStorage.setItem("userId", data.userId || data._id || data.id);
+      }
       setVerified(true);
-
-      setTimeout(() => {
-        window.location.href = "./"; 
-      }, 1000);
-    }, 1500);
+      navigate("/home");
+    } catch (err) {
+      setError(err.response?.data?.message || "Invalid OTP");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleResend = () => {
-    if (!phone) return;
+  const handleResend = async () => {
+    setError("");
     setResendLoading(true);
-    setTimeout(() => {
+    try {
+      await loginUser({ phone });
+      alert("OTP resent successfully");
+    } catch (err) {
+      setError(err.response?.data?.message || "Error resending OTP");
+    } finally {
       setResendLoading(false);
-      alert("OTP resent successfully!");
-    }, 1500);
+    }
   };
 
   return (
-    <div className="flex flex-col justify-center items-center h-screen bg-gray-50">
-      <h1 className="text-xl font-semibold mb-6 text-center">
-        Verify your OTP to continue
-      </h1>
+    <div className="flex justify-center items-center h-screen bg-gray-50 px-4">
+      <div className="flex flex-col gap-4 justify-center items-center border p-6 sm:p-8 rounded-lg w-full max-w-sm sm:max-w-md md:max-w-lg bg-white shadow-md">
+        <h1 className="text-lg sm:text-xl md:text-2xl font-semibold mb-4 sm:mb-6 text-center">
+          Verify your OTP
+        </h1>
 
-      <div className="flex flex-col gap-4 justify-center items-center border p-6 rounded-lg max-w-[400px] bg-white shadow-md">
-        {/* Phone Number Input */}
-        <TextField
-          id="outlined-phone"
-          label="Phone Number"
-          variant="outlined"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          className="w-full"
-        />
+        {error && <Alert severity="error" className="w-full">{error}</Alert>}
 
-        {/* OTP Input */}
-        <TextField
-          id="outlined-otp"
-          label="Verification Code"
-          variant="outlined"
-          value={otp}
-          onChange={(e) => setOtp(e.target.value)}
-          className="w-full"
-        />
+        <TextField label="Phone" value={phone} fullWidth InputProps={{ readOnly: true }} />
+        <TextField label="OTP" value={otp} onChange={(e) => setOtp(e.target.value)} fullWidth />
 
-        <div className="flex gap-4 relative mt-2">
+        <div className="flex flex-col sm:flex-row gap-4 mt-2 w-full">
           <Button
             onClick={handleVerify}
-            disabled={loading || verified || !phone || !otp}
-            className={`h-10 flex items-center justify-center gap-2 ${
-              loading || verified ? "bg-gray-400 hover:bg-gray-400" : ""
-            }`}
+            disabled={loading || verified || !otp}
             variant="contained"
+            fullWidth
+            className={`h-10 ${loading || verified || !otp ? "bg-gray-400" : "bg-blue-600"}`}
           >
             {loading && <CircularProgress size={20} className="text-white" />}
             {verified ? <CheckCircleIcon className="text-green-500" /> : "Verify"}
@@ -77,10 +85,9 @@ export default function OTPPage() {
           <Button
             onClick={handleResend}
             disabled={resendLoading || !phone}
-            className={`h-10 ${
-              resendLoading ? "bg-gray-400 hover:bg-gray-400" : ""
-            }`}
             variant="contained"
+            fullWidth
+            className={`h-10 ${resendLoading || !phone ? "bg-gray-400" : "bg-blue-500"}`}
           >
             {resendLoading ? "Resending..." : "Resend"}
           </Button>

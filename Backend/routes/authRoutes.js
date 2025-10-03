@@ -3,13 +3,10 @@ import { registerUser, verifyOTP, loginUser } from "../controllers/authControlle
 
 const router = express.Router();
 
-// Signup - send OTP
-router.post("/register", registerUser);
+router.post("/register", registerUser); //signin 
 
-// Verify OTP - login/signup
-router.post("/verify-otp", verifyOTP);
+router.post("/verify-otp", verifyOTP); //otp 
 
-// Login - send OTP for existing users
-router.post("/login", loginUser);
+router.post("/login", loginUser); //signup 
 
 export default router;

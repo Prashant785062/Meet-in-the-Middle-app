@@ -1,121 +1,158 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { FaArrowRight } from "react-icons/fa";
-/* import Testimonials from "./Testimonials";
- */import Card from '../Components/Card'
-import p1 from '../assets/p1.jpg'
-import p2 from '../assets/p2.jpg'
-import p3 from '../assets/p3.jpg'
-import p4 from '../assets/p4.jpg'
-import p5 from '../assets/p5.jpg'
-import p6 from '../assets/p6.jpg'
-import p7 from '../assets/p7.jpg'
-import p8 from '../assets/p8.jpg'
-import p9 from '../assets/p9.jpg'
-import p10 from '../assets/p10.jpg'
-import p11 from '../assets/p11.jpg'
-import p12 from '../assets/p12.jpg'
-import { useSocket } from "../Providers/Socket";
-import { useState, useEffect } from "react";
-import TextField from "@mui/material/TextField";
+import { Link } from 'react-router-dom';
+import Testimonials from "../CompoCollector/Testimonials";
 import Button from "@mui/material/Button";
+import Features from '../Components/Features';
+import { Box, Typography, Container } from "@mui/material";
+import "leaflet/dist/leaflet.css";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import Slider from "react-slick"; // for image carousel
+import "slick-carousel/slick/slick.css";
+import "slick-carousel/slick/slick-theme.css";
+import i1 from "../assets/i1.jpg";
+import i2 from "../assets/i2.jpg";
+import i3 from "../assets/i3.jpg";
+import i4 from "../assets/i4.jpg";
+
+
+
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
+
+const mockUser = { lat: 19.0537, lng: 72.9106, name: "You" };
+const mockMidpoint = { lat: 19.9514, lng: 75.1214, name: "Midpoint" };
+ 
+const slides = [
+  {
+    image: i2,
+    title: "Bring people together effortlessly",
+    subtitle: "Easily create and organize meetings with friends or colleagues",
+    buttons: [
+      { text: "Create Meeting", link: "/createmeeting" }
+    ]
+  },
+  {
+    image: i1,
+    title: "Find the perfect midpoint",
+    subtitle: "Our smart algorithm suggests the best meeting point for everyone",
+    buttons: [
+      { text: "Try Map Preview", link: "/map" }
+    ]
+  },
+  {
+    image: i3,
+    title: "Stay in control of your meetings",
+    subtitle: "Manage invitations, attendees, and meeting details with ease",
+    buttons: [
+      { text: "Dashboard", link: "/dashboard" }
+    ]
+  },
+  {
+    image: i4,
+    title: "This part isn't ready yet",
+    subtitle: "Due to some errors",
+    buttons: [
+      { text: "Try Notes", link: "/notes" }
+    ]
+  }
+];
 
 export default function Home() {
-  const navigate = useNavigate();
-  const socket = useSocket(); // ✅ returns socket directly
-
-  const [email, setEmail] = useState("");
-  const [roomId, setRoomId] = useState("");
-
-  // ✅ listen for "joined-room"
-  const handleRoomJoined = ({ roomId }) => {
-    console.log("✅ Joined room:", roomId);
-    navigate("/meeting");
-  };
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.on("joined-room", handleRoomJoined);
-
-    return () => {
-      socket.off("joined-room", handleRoomJoined);
-    };
-  }, [socket]);
-
-  // ✅ emit join-room event
-  const handleJoinRoom = () => {
-    if (!email || !roomId) {
-      alert("Please enter Email and Room Id");
-      return;
-    }
-    console.log("🔗 Joining room:", roomId, "with email:", email);
-    socket.emit("join-room", { email, roomId });
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 1000,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 4000,
+    arrows: false
   };
 
   return (
     <>
-    <div className="flex flex-col gap-4 w-80 mx-auto mt-10">
-      <TextField
-        required
-        label="E-mail"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
-      <TextField
-        required
-        label="Room Id"
-        value={roomId}
-        onChange={(e) => setRoomId(e.target.value)}
-      />
+      <Box sx={{ position: "relative", height: "900px", mb: 10 }}>
+        <Slider {...sliderSettings}>
+          {slides.map((slide, idx) => (
+            <Box
+              key={idx}
+              sx={{
+                height: "900px",
+                backgroundImage: `url(${slide.image})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                position: "relative",
+              }}
+            >
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "30%",
+                  left: "5%",
+                  color: "white",
+                  zIndex: 2,
+                  maxWidth: "500px"
+                }}
+              >
+                <Typography variant="h3" gutterBottom>
+                  {slide.title}
+                </Typography>
+                <Typography variant="h6" gutterBottom>
+                  {slide.subtitle}
+                </Typography>
+                <Box className="flex flex-row gap-4 mt-4">
+                  {slide.buttons.map((btn, i) => (
+                    <Link key={i} to={btn.link}>
+                      <Button variant="contained" color="primary">
+                        {btn.text}
+                      </Button>
+                    </Link>
+                  ))}
+                </Box>
+              </Box>
+            </Box>
+          ))}
+        </Slider>
+      </Box>
 
+      <Features />
 
-      <Button
-        fullWidth
-        variant="contained"
-        color="primary"
-        onClick={handleJoinRoom}
-      >
-        Join Room
-      </Button>
-    </div>
+      <Testimonials />
 
-
-
-
-
-
-    <div className="min-h-screen bg-teal-50 p-6">
-      <h3 className="font-bold text-2xl text-center mb-8">See what others think... 😊</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        <Card className="p-4" image={p1} TextAbout="Ankush Sharma, Founder of Kirodha" TextSaid="This app is amazing! It helped us coordinate meetings from different locations effortlessly. Our team productivity has gone up, and managing tasks has become so much smoother." />
-        <Card className="p-4" image={p2} TextAbout="Ritika Verma, Co-founder of Brainspire" TextSaid="I love how simple it is to set up meetings with teammates. The app keeps everyone connected and helps us finish projects faster while staying motivated." />
-        <Card className="p-4" image={p3} TextAbout="Vivek Yadav, CTO of Nexon Labs" TextSaid="Meet in the Middle has completely changed how we collaborate. It’s user-friendly and keeps the team spirit alive, no matter where we are working from." />
-        <Card className="p-4" image={p4} TextAbout="Megha Singh, Project Lead at CloudArc" TextSaid="The best tool for remote teamwork! It helps us plan meetings without hassle and keeps track of discussions, boosting our efficiency." />
-
-        <Card className=" -mt-6 z-0 hover:z-10" image={p5} TextAbout="Harsh Patel, Founder of TaskNova" TextSaid="This app made organizing group work so much easier. Now we can meet, plan, and execute tasks quickly, without unnecessary back-and-forth." />
-        <Card className=" -mt-6 z-0 hover:z-10" image={p6} TextAbout="Priya Nair, Product Manager at Innovex" TextSaid="I never realized how much smoother project management could be until I started using this app. Meetings are quicker, and team coordina" />
-        <Card className=" -mt-6 z-0 hover:z-10" image={p7} TextAbout="Rohan Gupta, CEO of SynergySoft" TextSaid="Meet in the Middle keeps us connected even when we are miles apart. It’s intuitive and helps us collaborate effectively, reducing delays." />
-        <Card className=" -mt-6 z-0 hover:z-10" image={p8} TextAbout="Neha Joshi, Lead Developer at DevSpark" TextSaid="This app has simplified team communication. It helps us align our goals, schedule meetings easily, and stay productive throughout the project lifecycle." />
-
-        <Card className="p-4" image={p9} TextAbout="Karan Malhotra, Operations Head at GridWorks" TextSaid="With this app, setting up meetings has become effortless. It encourages teamwork and helps us stay focused on completing tasks faster." />
-        <Card className="p-4" image={p10} TextAbout="Simran Kaur, Entrepreneur at QuickStart" TextSaid="The app is a game-changer! Scheduling meetings is quick, and it really helps maintain team enthusiasm and productivity even in busy schedules." />
-        <Card className="p-4" image={p11} TextAbout="Aditya Rao, Co-founder of BrightEdge" TextSaid="Using Meet in the Middle has streamlined how we collaborate. It’s easy to navigate and keeps our team on track for faster delivery." />
-        <Card image={p12} TextAbout="Sonal Chauhan, Head of Marketing at NextGen Hub" TextSaid="Remote meetings feel personal and efficient, helping us stay aligned." />
-        {/* Sticky button at the bottom corner */}
-        <Link to='/testimonials'>
-          <Button className="bg-blue-600 text-white hover:bg-white hover:text-blue-600 border-white border-2 hover:border-black flex items-center gap-2 px-6 py-3 rounded-full transition-colors">
-            Go to Testimonials Page <FaArrowRight />
-          </Button>
-        </Link>
-        </div>
-        </div>
-        <Link to='/subscription'>
-          <Button className="bg-blue-600 text-white hover:bg-white hover:text-blue-600 border-white border-2 hover:border-black flex items-center gap-2 px-6 py-3 rounded-full transition-colors">
-            Go to Subscription Page <FaArrowRight />
-          </Button>
-        </Link>
-
-      
-      </>
-  )
+      <Box id="map-preview"  sx={{ py: 6 }}>
+        <Typography variant="h4" align="center" gutterBottom>
+          Map Preview
+        </Typography>
+        <Typography variant="body2" align="center" mb={2}>
+          Mock user location & midpoint
+        </Typography>
+        <Container sx={{ height: 400 }}>
+          <MapContainer
+            center={[mockUser.lat, mockUser.lng]}
+            zoom={5}
+            scrollWheelZoom
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://osm.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker position={[mockUser.lat, mockUser.lng]}>
+              <Popup>{mockUser.name}</Popup>
+            </Marker>
+            <Marker position={[mockMidpoint.lat, mockMidpoint.lng]}>
+              <Popup>{mockMidpoint.name}</Popup>
+            </Marker>
+          </MapContainer>
+        </Container>
+      </Box>
+    </>
+  );
 }

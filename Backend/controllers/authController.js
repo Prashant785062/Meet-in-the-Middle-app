@@ -1,38 +1,35 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import { sendSMS } from "../server.js";
 
-// Helper function to generate 6-digit OTP
+// Temporary in-memory store for signup OTPs
+const tempUsers = new Map(); // key: phone, value: { username, password, otp, otpExpiry }
+
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
 
-// @desc    Register user and send OTP
-// @route   POST /api/auth/register
-// @access  Public
+// REGISTER - Step 1: Collect username/password/phone and send OTP
 export const registerUser = async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { username, password, phone } = req.body;
+    if (!username || !password || !phone)
+      return res.status(400).json({ message: "Username, password, and phone are required" });
 
-    if (!phone) {
-      return res.status(400).json({ message: "Phone number is required" });
-    }
+    // Check if user already exists in DB
+    const existingUser = await User.findOne({ $or: [{ username }, { phone }] });
+    if (existingUser)
+      return res.status(400).json({ message: "Username or phone already exists" });
 
-    // Check if user already exists
-    let user = await User.findOne({ phone });
-
-    // Generate OTP + expiry
+    // Generate OTP and expiry
     const otp = generateOTP();
     const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
 
-    if (user) {
-      // If user exists, update OTP
-      user.otp = otp;
-      user.otpExpiry = otpExpiry;
-      await user.save();
-    } else {
-      // If new user, create one
-      user = await User.create({ phone, otp, otpExpiry });
-    }
+    // Store in temporary memory
+    tempUsers.set(phone, { username, password, otp, otpExpiry });
 
-    console.log("Generated OTP:", otp); // later replace with Twilio
+    // Send OTP via Twilio
+    await sendSMS(phone, `Your OTP for Meet in the Middle App is ${otp}`);
+  console.log(`Generated OTP for login (${phone}): ${otp}`);
 
     res.status(200).json({ message: "OTP sent successfully", phone });
   } catch (error) {
@@ -41,66 +38,88 @@ export const registerUser = async (req, res) => {
   }
 };
 
-// @desc    Verify OTP and login
-// @route   POST /api/auth/verify-otp
-// @access  Public
+// VERIFY OTP - Step 2: Validate OTP and save user in DB
 export const verifyOTP = async (req, res) => {
   try {
     const { phone, otp } = req.body;
-
-    if (!phone || !otp) {
+    if (!phone || !otp)
       return res.status(400).json({ message: "Phone and OTP are required" });
-    }
 
-    const user = await User.findOne({ phone });
+    // Check OTP in temporary storage
+    const tempUser = tempUsers.get(phone);
+    if (!tempUser)
+      return res.status(404).json({ message: "No OTP request found for this phone" });
 
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    // Check if OTP is valid
-    if (user.otp !== otp || user.otpExpiry < new Date()) {
+    if (tempUser.otp !== otp || tempUser.otpExpiry < new Date())
       return res.status(400).json({ message: "Invalid or expired OTP" });
+
+    let newUser;
+
+    if (tempUser.username && tempUser.password) {
+      // This is a signup flow: hash password and save user
+      const hashedPassword = await bcrypt.hash(tempUser.password, 10);
+
+      newUser = await User.create({
+        username: tempUser.username,
+        password: hashedPassword,
+        phone,
+        isVerified: true,
+      });
+    } else {
+      // This is a login flow: find existing user
+      newUser = await User.findOne({ phone });
+      if (!newUser) {
+        return res.status(404).json({ message: "User not found. Please signup first." });
+      }
     }
 
-    // Mark user as verified
-    user.isVerified = true;
-    user.otp = null; // clear OTP
-    user.otpExpiry = null;
-    await user.save();
+    // Remove from temporary store
+    tempUsers.delete(phone);
 
-    // Generate JWT token
-    const token = jwt.sign({ id: user._id, phone: user.phone }, process.env.JWT_SECRET, {
-      expiresIn: process.env.JWT_EXPIRES_IN,
+    // Generate JWT
+    const token = jwt.sign(
+      { id: newUser._id, username: newUser.username, phone: newUser.phone },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRES_IN }
+    );
+
+    console.log(`OTP for ${phone}: ${otp}`);
+
+    // Return token AND user object so frontend can persist userId and user details
+    res.status(200).json({
+      message: "OTP verified",
+      token,
+      user: {
+        _id: newUser._id,
+        username: newUser.username,
+        phone: newUser.phone,
+      },
     });
-
-    res.status(200).json({ message: "OTP verified", token });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Server error" });
   }
 };
 
-// @desc    Login existing user by sending OTP
-// @route   POST /api/auth/login
-// @access  Public
+
+// LOGIN - Step 3: Send OTP for existing users
+
 export const loginUser = async (req, res) => {
   try {
     const { phone } = req.body;
-
     if (!phone) return res.status(400).json({ message: "Phone is required" });
 
-    let user = await User.findOne({ phone });
-
+    const user = await User.findOne({ phone });
     if (!user) return res.status(404).json({ message: "User not found. Please register first." });
 
-    // Generate new OTP + expiry
     const otp = generateOTP();
-    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000); // 5 mins
+    const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
 
-    user.otp = otp;
-    user.otpExpiry = otpExpiry;
-    await user.save();
+    // Store OTP temporarily (can also store in DB if you want persistent OTP)
+    tempUsers.set(phone, { otp, otpExpiry });
 
-    console.log("Login OTP:", otp); // later replace with Twilio
+    await sendSMS(phone, `Your OTP for login to Meet in the Middle App is ${otp}`);
+  console.log(`Generated OTP for login (${phone}): ${otp}`);
 
     res.status(200).json({ message: "OTP sent for login", phone });
   } catch (error) {

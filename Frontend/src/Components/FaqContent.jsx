@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 export default function FaqContent() {
-
+ 
     const faqs = [
   {
     question: "What is Meet in the Middle?",
