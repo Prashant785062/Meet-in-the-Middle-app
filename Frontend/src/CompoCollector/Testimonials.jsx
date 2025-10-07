@@ -23,7 +23,7 @@ export default function Testimonials() {
           Hear from professionals and teams who rely on Meet in the Middle to simplify their collaboration and save time.
         </p>
       </div>
-
+ 
       <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 px-4">
         {testimonials.map((t, i) => (
           <div

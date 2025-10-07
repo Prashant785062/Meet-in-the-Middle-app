@@ -7,15 +7,17 @@ export default function Footer() {
     <footer className="w-full bg-blue-950 text-white py-8 overflow-x-hidden">
       <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8 px-4">
 
+        {/* 1 - Text + icons */}
         <div className="sm:col-span-1 md:col-span-1">
           <p className="mb-4 text-sm pb-1 text-gray-200">
             “Meet in the Middle helps you effortlessly organize meetings by suggesting convenient and accessible locations.
-            It saves time, improves coordination, and ensures that everyone can easily join without hassle.” ~ Prashant
+            It saves time, improves coordination, and ensures that everyone can easily join without hassle.”
           </p>
           <Links />
         </div>
 
-        <div className="sm:col-span-1 md:col-span-1">
+        {/* 2 - navigations */}
+        <div className="sm:col-span-1 md:col-span-1 ml-15">
           <h3 className="font-semibold mb-2">Quick Links</h3>
           <ul className="list-disc list-inside space-y-1">
             <li><QuickLinks name="Home" to="/home" /> </li>
@@ -25,6 +27,8 @@ export default function Footer() {
           </ul>
         </div>
 
+        {/* 3 - legal links */}
+
         <div className="sm:col-span-1 md:col-span-1">
           <h3 className="font-semibold mb-2">Legal Links</h3>
           <ul className="list-disc list-inside space-y-1">
@@ -32,6 +36,8 @@ export default function Footer() {
             <li><QuickLinks name="Terms & Conditions" to="/terms&Conditions2" /> </li>
           </ul>
         </div>
+
+        {/* 4 - support + contacts */}
 
         <div className="sm:col-span-1 md:col-span-1">
           <h3 className="font-semibold mb-2">Support & Feedback</h3>
@@ -42,6 +48,8 @@ export default function Footer() {
           </ul>
         </div>
       </div>
+
+      {/* Below part */}
 
       <div className="mt-5 border-t border-gray-700 pt-5 text-center text-sm text-gray-300 flex flex-col sm:flex-row justify-center items-center gap-1">
         <CopyrightIcon fontSize="small" />

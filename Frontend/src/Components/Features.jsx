@@ -16,6 +16,8 @@ export default function Features() {
         </p>
       </div>
 
+
+{/* content 1 */}     
       <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center mb-16">
         {/* Left: Image */}
         <div className="rounded-xl overflow-hidden shadow-md">
@@ -41,7 +43,8 @@ export default function Features() {
         </div> 
       </div>
 
-      <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center">
+{/* content 2 */}     
+ <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 items-center">
         {/* Left: Content */}
         <div className="order-2 md:order-1">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">

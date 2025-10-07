@@ -73,11 +73,9 @@ export default function FaqContent() {
       </Typography>
 
       {faqs.map((faq, index) => (
-        <Accordion key={index}>
+        <Accordion key={index}>  
           <AccordionSummary
             expandIcon={<ExpandMoreIcon />}
-            aria-controls={`faq-content-${index}`}
-            id={`faq-header-${index}`}
           >
             <Typography variant="subtitle1" fontWeight="bold">
               {faq.question}

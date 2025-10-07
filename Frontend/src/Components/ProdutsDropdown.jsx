@@ -1,56 +1,30 @@
 import { Link } from "react-router-dom";
 import NotesIcon from "@mui/icons-material/Notes";
 import Alert from "@mui/material/Alert";
-import { Box, Typography } from "@mui/material"; 
 
 export default function ProductsDropdown() {
   return (
+  <div className="bg-white shadow-2xl z-50 w-[450px] rounded-lg border border-gray-300 p-2">
+    <div className="grid grid-cols-2 gap-2 p-1">
 
-    <Box 
-      className="bg-white  shadow-2xl z-50" 
-      sx={{ 
-        width: 450, // Fixed width for a professional mega menu look
-        borderRadius: 2, 
-        border: '1px solid',
-        borderColor: 'grey.300', // Subtle border
-        p: 2, 
-      }}
-    >
-      <Box 
-        sx={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(2, 1fr)', 
-          gap: 2, 
-          p: 1 
-        }}
+      <Link
+        to="/notes"
+        className="flex flex-col items-start p-3 rounded-lg no-underline transition duration-200 bg-purple-100 border border-purple-700"
       >
-        
-        <Link
-          to="/notes"
-          className="flex flex-col items-start p-3 rounded-lg no-underline transition duration-200"
-          style={{ 
-            backgroundColor: 'rgba(109, 40, 217, 0.1)', 
-            border: '1px solid #6D28D9' 
-          }}
-        >
-          <NotesIcon sx={{ color: 'primary.main', fontSize: 30, mb: 1 }} />
-          <Typography 
-            variant="subtitle1" 
-            sx={{ fontWeight: 'bold', color: 'text.primary' }}
-          >
-            Quick Notes
-          </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-            Coordinate and store short-term meeting notes.
-          </Typography>
-        </Link>
+        <NotesIcon className="text-purple-700 text-[30px] mb-1" />
+        <h3 className="font-bold text-gray-900 text-[16px]">Quick Notes</h3>
+        <p className="text-gray-500 text-sm">
+          Coordinate and store short-term meeting notes.
+        </p>
+      </Link>
 
-        <Box sx={{ gridColumn: 'span 2', mt: 1 }}>
-          <Alert severity="info" variant="outlined">
-            More products will be added after WebRTC and Socket integration. Stay tuned for further updates!
-          </Alert>
-        </Box>
-      </Box>
-    </Box>
-  );
-}
+      <div className="col-span-2 mt-1 border border-blue-300 bg-blue-50 text-blue-800 p-2 rounded-md">
+        <Alert severity="info" icon={false} className="bg-blue-50 p-0 m-0">
+                  More products will be added after WebRTC and Socket integration. Stay tuned for further updates!
+        </Alert>
+      </div>
+
+    </div>
+  </div>
+);
+} 
