@@ -3,14 +3,15 @@ import Invitation from '../models/Invitation.js';
 import mongoose from 'mongoose';
 
 
+/* sendInvitations */
+
 export const sendInvitations = async (req, res) => {
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const session = await mongoose.startSession(); // Start a MongoDB session (used for transactions)
+  session.startTransaction(); // Begin a new transaction inside this session
 
   try {
-    const { meetingId, userIds } = req.body;
+    const { meetingId, userIds } = req.body; 
 
-    // Validate input
     if (!meetingId || !userIds?.length) {
       return res.status(400).json({
         success: false,
@@ -18,7 +19,7 @@ export const sendInvitations = async (req, res) => {
       });
     }
 
-    // Verify meeting exists
+    // Check if the meeting exists in the database
     const meeting = await Meeting.findById(meetingId);
     if (!meeting) {
       return res.status(404).json({
@@ -27,32 +28,37 @@ export const sendInvitations = async (req, res) => {
       });
     }
 
-    // Create invitations one by one within the transaction
+    // Create invitation entries for each user
     const invitations = [];
-    for (const userId of userIds) {
+    for (const userId of userIds) {  
       const invitation = await Invitation.create([{
         meeting: meetingId,
         user: userId,
         status: 'pending'
       }], { session });
+
       invitations.push(invitation[0]);
     }
 
-    // Update meeting with new invitation IDs
+    //  update the Meeting document to include the created invitations
     await Meeting.findByIdAndUpdate(
       meetingId,
       { 
         $push: { 
           invitations: { 
+            // $each allows pushing multiple items at once
+            // invitations.map(inv => inv._id) extracts only the _id from each invitation
             $each: invitations.map(inv => inv._id) 
           } 
         } 
       },
-      { session }
+      { session } 
     );
 
+    // Commit 
     await session.commitTransaction();
 
+    // Send response to client
     res.status(201).json({
       success: true,
       message: 'Invitations sent successfully',
@@ -71,11 +77,14 @@ export const sendInvitations = async (req, res) => {
   }
 };
 
-// Respond to invitation (accept/decline)
+
+/*  respondInvitation */
+
 export const respondInvitation = async (req, res) => {
-     console.log("🔥 respondInvitation called with params:", req.params);
+  console.log("respondInvitation called with params:", req.params); // params - url part
+
   try {
-    const { id, response } = req.params;
+    const { id, response } = req.params; 
 
     if (!["accept", "decline"].includes(response)) {
       return res.status(400).json({ success: false, message: "Invalid response" });
@@ -86,34 +95,36 @@ export const respondInvitation = async (req, res) => {
       return res.status(404).json({ success: false, message: "Invitation not found" });
     }
 
+
     invitation.status = response === "accept" ? "accepted" : "declined";
-    await invitation.save();
+    await invitation.save(); // Save updated invitation to database
 
     res.json({ success: true, message: `Invitation ${response}ed`, invitation });
+
   } catch (error) {
-    console.error("❌ Error responding invitation:", error);
+    console.error("Error responding to invitation:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 };
 
 
-// Get all invitations for a specific user
-// Get all invitations for a specific user
+/*  getUserInvitations */
 export const getUserInvitations = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId } = req.params; 
 
     if (!userId) {
       return res.status(400).json({ success: false, message: "User ID is required" });
     }
 
+    // .populate() is used to replace the 'meeting' field with actual meeting details
     const invitations = await Invitation.find({ user: userId })
-      .populate("meeting", "title dateTime createdBy"); // use correct field
+      .populate("meeting", "title dateTime createdBy"); 
 
     res.json({ success: true, invitations });
+
   } catch (error) {
-    console.error("❌ Error fetching user invitations:", error);
+    console.error("Error fetching user invitations:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };
-

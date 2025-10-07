@@ -4,8 +4,8 @@ import { authenticateToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Get all users
 router.get("/", authenticateToken, getAllUsers);
+
 router.get("/:id", authenticateToken, getUser);
 
 export default router;

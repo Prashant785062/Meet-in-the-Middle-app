@@ -7,7 +7,7 @@ const userSchema = new mongoose.Schema({
   otp: { type: String },
   otpExpiry: { type: Date },
   isVerified: { type: Boolean, default: false },
-}, { timestamps: true });
+}, { timestamps: true });  // Automatically adds 'createdAt' and 'updatedAt' fields to track document history
 
 const User = mongoose.model("User", userSchema);
 export default User;

@@ -3,13 +3,10 @@ import { respondInvitation, sendInvitations, getUserInvitations } from "../contr
 
 const router = express.Router();
 
-// Send invitations
 router.post("/send", sendInvitations);
 
-// Respond to invitation
-router.patch("/:id/:response", respondInvitation);
+router.patch("/:id/:response", respondInvitation); // patch -- Updates only the specific fields you provide in the request.
 
-// Get all invitations for a specific user
 router.get("/user/:userId", getUserInvitations);
 
 export default router;
